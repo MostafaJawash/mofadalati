@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# مفاضلتي — shared admissions & preferences
 
-## Getting Started
+A centralized Next.js app for one student (default score **83%**, scientific branch, 2026‑2027):
 
-First, run the development server:
+- **`/`** (public, no login): shows only the admission options available for the configured score, with General (عام) and Parallel (موازي) checked independently, plus the one shared 40‑slot preference list and a PDF download.
+- **`/admin`** (password protected): manage the shared preference list (add, drag to reorder, remove, clear, lock and unlock), edit the admission data, change site settings (score, academic year, title), and view the change history.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+PostgreSQL is the single source of truth. Nothing important lives in `localStorage` or React state. Every change goes through a server action, is written to the database inside a transaction, and appears on every open browser within about 3 seconds.
+
+## Architecture
+
+```
+Browser ──> Next.js (server components + server actions + route handlers) ──> PostgreSQL
+   ▲                                                                            │
+   └──── polls /api/sync every 3s; on revision change → router.refresh() ◄──────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Table | Purpose |
+|---|---|
+| `admissions` | 803 rows extracted from إعلان رقم 2 (pages 1–21, including the defence and security universities). Each track has `*_available`, `*_minimum` (NULL = no total‑score minimum, e.g. "جميع المتقدمين") and `*_conditions`. |
+| `preferences` | The shared list. `position` is unique (1–40, always contiguous) and `(admission_id, track)` is unique. |
+| `settings` | `student_score`, `academic_year`, `site_title`, `preferences_locked`. |
+| `audit_log` | Every mutation, with the editor's name and a timestamp. |
+| `sync_state` | A revision counter bumped by triggers on any data change. Clients poll it, and its row lock serializes concurrent preference edits. |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Filtering happens in SQL (`getAvailableAdmissions`), so the homepage only receives options open to the current score. Change the score in **/admin → إعدادات الموقع** and the public page updates with no code change.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. Create a PostgreSQL database. Supabase works well: *Project Settings → Database → Connection string*. On serverless hosts use the pooler URL and append `?sslmode=require`.
+2. Copy the env file and fill it in:
+   ```bash
+   cp .env.example .env.local
+   # DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
+   ```
+3. Create the schema and import the admission data:
+   ```bash
+   npm install
+   npm run db:setup                       # idempotent
+   npm run db:setup -- --reset-admissions # re-import db/admissions.json (clears preferences)
+   ```
+4. Run:
+   ```bash
+   npm run dev        # http://localhost:3000
+   npm run build && npm start
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+For a local database: `docker run -d --name mofadalati-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=mofadalati -p 54329:5432 postgres:16-alpine` (matches `.env.example`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Admin access
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Editors sign in at `/admin` with `ADMIN_PASSWORD` and a display name (recorded in the history). The session is an HMAC‑signed, httpOnly cookie. Every server action re‑checks the session and the lock state on the server, so public visitors cannot change anything even if they call an action directly.
 
-## Deploy on Vercel
+## PDF
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`GET /api/preferences/pdf` renders the current database list (all 40 positions, empty ones included) with `@react-pdf/renderer` and IBM Plex Sans Arabic (`assets/fonts`, OFL).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Re-extracting the data
+
+`scripts/build.py` and `scripts/transform.py` (Python, `pip install pymupdf`) rebuild `db/admissions.json` from the ministry PDF. Run them from a folder containing the PDF saved as `src.pdf`.

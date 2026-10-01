@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f6f9;
+  --foreground: #1b2430;
+  --surface: #ffffff;
+  --surface-2: #eef2f7;
+  --border: #dbe2ea;
+  --muted: #5c6b7a;
+  --primary: #1d4e89;
+  --primary-soft: #e3edf9;
+  --accent: #0f766e;
+  --accent-soft: #dff4f1;
+  --parallel: #9a5b00;
+  --parallel-soft: #fdf0dc;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --success: #067647;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f141a;
+    --foreground: #e6ebf0;
+    --surface: #171e26;
+    --surface-2: #1f2832;
+    --border: #2c3845;
+    --muted: #93a1b0;
+    --primary: #7fb0ec;
+    --primary-soft: #1a2c42;
+    --accent: #4fd1c0;
+    --accent-soft: #123430;
+    --parallel: #f2b35b;
+    --parallel-soft: #3a2a12;
+    --danger: #f97066;
+    --danger-soft: #3d1a17;
+    --success: #47cd89;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-parallel: var(--parallel);
+  --color-parallel-soft: var(--parallel-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --font-sans: var(--font-arabic), system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.tabular {
+  /* Numbers and percentages read left-to-right ("83%", "11 / 40") inside RTL text. */
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
