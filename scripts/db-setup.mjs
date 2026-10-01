@@ -21,7 +21,8 @@ if (!url) {
 
 const useSsl = process.env.DATABASE_SSL === "true" || /sslmode=require/.test(url);
 const client = new pg.Client({
-  connectionString: url,
+  // Strip sslmode: pg would treat it as verify-full and override `ssl` below.
+  connectionString: url.replace(/([?&])sslmode=[^&]*&?/, "$1").replace(/[?&]$/, ""),
   ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 

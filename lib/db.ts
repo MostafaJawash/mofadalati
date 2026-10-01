@@ -14,10 +14,16 @@ function createPool() {
   if (!url) throw new Error("DATABASE_URL is not set");
   const useSsl = process.env.DATABASE_SSL === "true" || /sslmode=require/.test(url);
   return new Pool({
-    connectionString: url,
+    // pg treats sslmode in the URL as verify-full and lets it override `ssl`,
+    // which rejects Supabase's pooler certificate; we set TLS explicitly instead.
+    connectionString: stripSslMode(url),
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
     max: 5,
   });
+}
+
+function stripSslMode(url: string): string {
+  return url.replace(/([?&])sslmode=[^&]*&?/, "$1").replace(/[?&]$/, "");
 }
 
 export function db(): Pool {
