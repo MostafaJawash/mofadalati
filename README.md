@@ -2,7 +2,7 @@
 
 A centralized Next.js app for one student (default score **83%**, scientific branch, 2026‑2027):
 
-- **`/`** (public, no login): shows only the admission options available for the configured score, with General (عام) and Parallel (موازي) checked independently, plus the one shared 40‑slot preference list and a PDF download.
+- **`/`** (public, no login): shows only the admission options available for the configured score, with General (عام) and Parallel (موازي) checked independently, plus the one shared preference list (no limit on its length) and a PDF download.
 - **`/admin`** (password protected): manage the shared preference list (add, drag to reorder, remove, clear, lock and unlock), edit the admission data, change site settings (score, academic year, title), and view the change history.
 
 PostgreSQL is the single source of truth. Nothing important lives in `localStorage` or React state. Every change goes through a server action, is written to the database inside a transaction, and appears on every open browser within about 3 seconds.
@@ -18,7 +18,7 @@ Browser ──> Next.js (server components + server actions + route handlers) �
 | Table | Purpose |
 |---|---|
 | `admissions` | 803 rows extracted from إعلان رقم 2 (pages 1–21, including the defence and security universities). Each track has `*_available`, `*_minimum` (NULL = no total‑score minimum, e.g. "جميع المتقدمين") and `*_conditions`. |
-| `preferences` | The shared list. `position` is unique (1–40, always contiguous) and `(admission_id, track)` is unique. |
+| `preferences` | The shared list. `position` is unique (1..n, always contiguous, no upper limit) and `(admission_id, track)` is unique. |
 | `settings` | `student_score`, `academic_year`, `site_title`, `preferences_locked`. |
 | `audit_log` | Every mutation, with the editor's name and a timestamp. |
 | `sync_state` | A revision counter bumped by triggers on any data change. Clients poll it, and its row lock serializes concurrent preference edits. |
@@ -53,7 +53,7 @@ Editors sign in at `/admin` with `ADMIN_PASSWORD` and a display name (recorded i
 
 ## PDF
 
-`GET /api/preferences/pdf` renders the current database list (all 40 positions, empty ones included) with `@react-pdf/renderer` and IBM Plex Sans Arabic (`assets/fonts`, OFL).
+`GET /api/preferences/pdf` renders the current database list (every preference, across as many pages as needed) with `@react-pdf/renderer` and IBM Plex Sans Arabic (`assets/fonts`, OFL).
 
 ## Re-extracting the data
 

@@ -2,7 +2,7 @@ import "server-only";
 import path from "node:path";
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { trackMinimum } from "./eligibility";
-import { MAX_PREFERENCES, TRACK_LABEL, type Preference, type Settings } from "./types";
+import { TRACK_LABEL, type Preference, type Settings } from "./types";
 
 const fontDir = path.join(process.cwd(), "assets", "fonts");
 Font.register({
@@ -36,7 +36,6 @@ const s = StyleSheet.create({
 });
 
 function PreferencesDocument({ settings, preferences }: { settings: Settings; preferences: Preference[] }) {
-  const byPosition = new Map(preferences.map((p) => [p.position, p]));
   const generated = new Date().toISOString().slice(0, 16).replace("T", " ");
   return (
     <Document title="الرغبات الجامعية" author="mofadalati" language="ar">
@@ -64,27 +63,29 @@ function PreferencesDocument({ settings, preferences }: { settings: Settings; pr
           <Text style={[s.cell, s.track]}>النوع</Text>
           <Text style={[s.cell, s.min]}>الحد الأدنى %</Text>
         </View>
-        {Array.from({ length: MAX_PREFERENCES }, (_, i) => i + 1).map((pos) => {
-          const p = byPosition.get(pos);
-          const min = p ? trackMinimum(p.admission, p.track) : null;
+        {preferences.map((p) => {
+          const min = trackMinimum(p.admission, p.track);
           return (
-            <View key={pos} style={[s.row, pos % 2 === 0 ? s.zebra : {}]} wrap={false}>
-              <Text style={[s.cell, s.num]}>{String(pos)}</Text>
-              {p ? (
-                <>
-                  <Text style={[s.cell, s.name]}>{p.admission.specialization}</Text>
-                  <Text style={[s.cell, s.city]}>{p.admission.city ?? p.admission.university ?? ""}</Text>
-                  <Text style={[s.cell, s.track]}>{TRACK_LABEL[p.track]}</Text>
-                  <Text style={[s.cell, s.min]}>{min === null ? "—" : String(min)}</Text>
-                </>
-              ) : (
-                <Text style={[s.cell, s.name, s.empty]}>— فارغة —</Text>
-              )}
+            <View key={p.id} style={[s.row, p.position % 2 === 0 ? s.zebra : {}]} wrap={false}>
+              <Text style={[s.cell, s.num]}>{String(p.position)}</Text>
+              <Text style={[s.cell, s.name]}>{p.admission.specialization}</Text>
+              <Text style={[s.cell, s.city]}>{p.admission.city ?? p.admission.university ?? ""}</Text>
+              <Text style={[s.cell, s.track]}>{TRACK_LABEL[p.track]}</Text>
+              <Text style={[s.cell, s.min]}>{min === null ? "—" : String(min)}</Text>
             </View>
           );
         })}
+        {preferences.length === 0 && (
+          <View style={s.row}>
+            <Text style={[s.cell, s.name, s.empty]}>لا توجد رغبات</Text>
+          </View>
+        )}
         <View style={s.footer} fixed>
-          <Text>{`${preferences.length} / ${MAX_PREFERENCES}`}</Text>
+          {/* Separate Text nodes: react-pdf mis-orders numbers mixed into Arabic runs. */}
+          <View style={{ flexDirection: "row-reverse", gap: 3 }}>
+            <Text>عدد الرغبات:</Text>
+            <Text>{String(preferences.length)}</Text>
+          </View>
           <Text>{generated} UTC</Text>
         </View>
       </Page>

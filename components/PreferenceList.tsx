@@ -15,7 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useState, useTransition } from "react";
 import { clearPreferences, movePreference, removePreference, setPreferencesLocked, type ActionResult } from "@/app/actions";
 import { formatScore, isEligible, trackMinimum } from "@/lib/eligibility";
-import { MAX_PREFERENCES, TRACK_LABEL, type Preference } from "@/lib/types";
+import { TRACK_LABEL, type Preference } from "@/lib/types";
 import { toast } from "./Toaster";
 
 type Props = {
@@ -82,7 +82,7 @@ export function PreferenceList({ preferences, score, locked, isAdmin }: Props) {
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-xl font-bold">قائمة الرغبات</h2>
         <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-sm font-semibold tabular">
-          {items.length} / {MAX_PREFERENCES}
+          {items.length}
         </span>
         {locked ? (
           <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-sm font-semibold text-success">تم تثبيت الرغبات 🔒</span>
@@ -146,17 +146,11 @@ export function PreferenceList({ preferences, score, locked, isAdmin }: Props) {
         </SortableContext>
       </DndContext>
 
-      <ol className="flex flex-col gap-1.5">
-        {Array.from({ length: MAX_PREFERENCES - items.length }, (_, i) => items.length + i + 1).map((pos) => (
-          <li
-            key={pos}
-            className="flex items-center gap-3 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted"
-          >
-            <span className="w-7 text-center font-semibold tabular">{pos}</span>
-            <span>فارغة</span>
-          </li>
-        ))}
-      </ol>
+      {items.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+          لا توجد رغبات بعد.
+        </p>
+      )}
     </section>
   );
 }

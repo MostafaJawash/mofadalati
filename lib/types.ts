@@ -5,8 +5,6 @@ export const TRACK_LABEL: Record<Track, string> = {
   parallel: "موازي",
 };
 
-export const MAX_PREFERENCES = 40;
-
 export type Admission = {
   id: number;
   specialization: string;

@@ -6,7 +6,7 @@ import { checkPassword, createSession, destroySession, requireAdmin } from "@/li
 import { withTransaction } from "@/lib/db";
 import { isEligible } from "@/lib/eligibility";
 import { getAdmission, getSettings } from "@/lib/queries";
-import { MAX_PREFERENCES, TRACK_LABEL, type Track } from "@/lib/types";
+import { TRACK_LABEL, type Track } from "@/lib/types";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -94,7 +94,6 @@ export async function addPreference(admissionId: number, track: Track): Promise<
       throw new UserError(`هذا الخيار غير متاح لمعدل ${studentScore}%`);
     }
     const ids = await orderedPreferenceIds(client);
-    if (ids.length >= MAX_PREFERENCES) throw new UserError(`لا يمكن إضافة أكثر من ${MAX_PREFERENCES} رغبة`);
     const dup = await client.query("SELECT position FROM preferences WHERE admission_id = $1 AND track = $2", [
       admission.id,
       track,

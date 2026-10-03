@@ -25,7 +25,6 @@ export default async function Home() {
             score={settings.studentScore}
             taken={taken}
             canEdit={isAdmin && !settings.preferencesLocked}
-            preferenceCount={preferences.length}
           />
         </div>
         <aside className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">

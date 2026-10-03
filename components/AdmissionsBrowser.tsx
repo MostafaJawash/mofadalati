@@ -4,7 +4,7 @@ import { useDeferredValue, useMemo, useState, useTransition } from "react";
 import { addPreference } from "@/app/actions";
 import { eligibleTracks, formatScore, trackConditions, trackMinimum } from "@/lib/eligibility";
 import { governorate, normalizeArabic } from "@/lib/text";
-import { CATEGORY_LABEL, MAX_PREFERENCES, TRACK_LABEL, type Admission, type Track } from "@/lib/types";
+import { CATEGORY_LABEL, TRACK_LABEL, type Admission, type Track } from "@/lib/types";
 import { toast } from "./Toaster";
 
 const PAGE = 60;
@@ -15,10 +15,9 @@ type Props = {
   /** "admissionId:track" -> position in the shared list */
   taken: Record<string, number>;
   canEdit: boolean;
-  preferenceCount: number;
 };
 
-export function AdmissionsBrowser({ admissions, score, taken, canEdit, preferenceCount }: Props) {
+export function AdmissionsBrowser({ admissions, score, taken, canEdit }: Props) {
   const [query, setQuery] = useState("");
   const [gov, setGov] = useState("");
   const [track, setTrack] = useState<"" | Track>("");
@@ -149,7 +148,6 @@ export function AdmissionsBrowser({ admissions, score, taken, canEdit, preferenc
               tracks={track ? tracks.filter((t) => t === track) : tracks}
               taken={taken}
               canEdit={canEdit}
-              full={preferenceCount >= MAX_PREFERENCES}
             />
           ))}
         </ul>
@@ -172,13 +170,11 @@ function AdmissionCard({
   tracks,
   taken,
   canEdit,
-  full,
 }: {
   admission: Admission;
   tracks: Track[];
   taken: Record<string, number>;
   canEdit: boolean;
-  full: boolean;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -222,10 +218,10 @@ function AdmissionCard({
                   ) : canEdit ? (
                     <button
                       onClick={() => add(t)}
-                      disabled={pending || full}
+                      disabled={pending}
                       className="rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50 dark:text-background"
                     >
-                      {full ? "القائمة ممتلئة" : "إضافة للرغبات"}
+                      إضافة للرغبات
                     </button>
                   ) : null}
                 </span>

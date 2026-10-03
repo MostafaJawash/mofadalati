@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS admissions (
 
 CREATE INDEX IF NOT EXISTS admissions_source_order_idx ON admissions (source_order);
 
--- One shared list. Positions are always contiguous 1..n (n <= 40).
+-- One shared list. Positions are always contiguous 1..n (no upper limit).
 CREATE TABLE IF NOT EXISTS preferences (
   id            serial PRIMARY KEY,
-  position      integer NOT NULL CHECK (position BETWEEN 1 AND 40),
+  position      integer NOT NULL CHECK (position >= 1),
   admission_id  integer NOT NULL REFERENCES admissions (id) ON DELETE CASCADE,
   track         text NOT NULL CHECK (track IN ('general', 'parallel')),
   created_at    timestamptz NOT NULL DEFAULT now(),
@@ -42,6 +42,10 @@ CREATE TABLE IF NOT EXISTS preferences (
   CONSTRAINT preferences_position_key UNIQUE (position) DEFERRABLE INITIALLY DEFERRED,
   CONSTRAINT preferences_option_key UNIQUE (admission_id, track)
 );
+
+-- Migration: earlier versions capped the list at 40 positions.
+ALTER TABLE preferences DROP CONSTRAINT IF EXISTS preferences_position_check;
+ALTER TABLE preferences ADD CONSTRAINT preferences_position_check CHECK (position >= 1);
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id          bigserial PRIMARY KEY,

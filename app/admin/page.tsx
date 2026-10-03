@@ -13,7 +13,7 @@ import { getAllAdmissions, getAuditLog, getAvailableAdmissions, getPreferences, 
 export const dynamic = "force-dynamic";
 
 const TABS = [
-  { key: "preferences", label: "الرغبات الأربعون" },
+  { key: "preferences", label: "الرغبات" },
   { key: "admissions", label: "بيانات المفاضلة" },
   { key: "settings", label: "إعدادات الموقع" },
   { key: "history", label: "سجل التغييرات" },
@@ -95,7 +95,6 @@ async function PreferencesTab() {
             score={settings.studentScore}
             taken={taken}
             canEdit
-            preferenceCount={preferences.length}
           />
         )}
       </div>
