@@ -4,7 +4,7 @@ import { useDeferredValue, useMemo, useState, useTransition } from "react";
 import { addPreference } from "@/app/actions";
 import { eligibleTracks, formatScore, trackConditions, trackMinimum } from "@/lib/eligibility";
 import { governorate, normalizeArabic } from "@/lib/text";
-import { CATEGORY_LABEL, TRACK_LABEL, type Admission, type Track } from "@/lib/types";
+import { CATEGORY_LABEL, trackLabel, type Admission, type Track } from "@/lib/types";
 import { toast } from "./Toaster";
 
 const PAGE = 60;
@@ -207,7 +207,7 @@ function AdmissionCard({
                     t === "general" ? "bg-accent-soft text-accent" : "bg-parallel-soft text-parallel"
                   }`}
                 >
-                  {TRACK_LABEL[t]}
+                  {trackLabel(a.category, t)}
                 </span>
                 <span className="font-bold tabular">{min === null ? "بدون حد أدنى للمجموع" : formatScore(min)}</span>
                 <span className="ms-auto">

@@ -2,7 +2,7 @@ import "server-only";
 import path from "node:path";
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { trackMinimum } from "./eligibility";
-import { TRACK_LABEL, type Preference, type Settings } from "./types";
+import { trackLabel, type Preference, type Settings } from "./types";
 
 const fontDir = path.join(process.cwd(), "assets", "fonts");
 Font.register({
@@ -28,7 +28,7 @@ const s = StyleSheet.create({
   cell: { paddingHorizontal: 5, paddingVertical: 1, textAlign: "right" },
   num: { width: 26, textAlign: "center" },
   name: { flex: 1 },
-  city: { width: 100 },
+  city: { width: 170 },
   track: { width: 44, textAlign: "center" },
   min: { width: 62, textAlign: "center" },
   empty: { color: "#9aa5b1" },
@@ -69,8 +69,8 @@ function PreferencesDocument({ settings, preferences }: { settings: Settings; pr
             <View key={p.id} style={[s.row, p.position % 2 === 0 ? s.zebra : {}]} wrap={false}>
               <Text style={[s.cell, s.num]}>{String(p.position)}</Text>
               <Text style={[s.cell, s.name]}>{p.admission.specialization}</Text>
-              <Text style={[s.cell, s.city]}>{p.admission.city ?? p.admission.university ?? ""}</Text>
-              <Text style={[s.cell, s.track]}>{TRACK_LABEL[p.track]}</Text>
+              <Text style={[s.cell, s.city]}>{[p.admission.city, p.admission.university].filter(Boolean).join(" - ")}</Text>
+              <Text style={[s.cell, s.track]}>{trackLabel(p.admission.category, p.track)}</Text>
               <Text style={[s.cell, s.min]}>{min === null ? "—" : String(min)}</Text>
             </View>
           );

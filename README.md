@@ -17,7 +17,7 @@ Browser ──> Next.js (server components + server actions + route handlers) �
 
 | Table | Purpose |
 |---|---|
-| `admissions` | 803 rows extracted from إعلان رقم 2 (pages 1–21, including the defence and security universities). Each track has `*_available`, `*_minimum` (NULL = no total‑score minimum, e.g. "جميع المتقدمين") and `*_conditions`. |
+| `admissions` | 803 rows from إعلان رقم 2 (public universities, including the defence and security universities) plus 389 rows from إعلان رقم 7 table 1 (private universities, scientific branch; category `private`, single track stored as `general` and shown as "خاص"). Each track has `*_available`, `*_minimum` (NULL = no total‑score minimum, e.g. "جميع المتقدمين") and `*_conditions`. |
 | `preferences` | The shared list. `position` is unique (1..n, always contiguous, no upper limit) and `(admission_id, track)` is unique. |
 | `settings` | `student_score`, `academic_year`, `site_title`, `preferences_locked`. |
 | `audit_log` | Every mutation, with the editor's name and a timestamp. |
@@ -57,4 +57,4 @@ Editors sign in at `/admin` with `ADMIN_PASSWORD` and a display name (recorded i
 
 ## Re-extracting the data
 
-`scripts/build.py` and `scripts/transform.py` (Python, `pip install pymupdf`) rebuild `db/admissions.json` from the ministry PDF. Run them from a folder containing the PDF saved as `src.pdf`.
+`scripts/build.py` and `scripts/transform.py` (Python, `pip install pymupdf`) rebuild `db/admissions.json` from the ministry PDF. Run them from a folder containing the PDF saved as `src.pdf`. `npm run db:setup` loads each data file (`db/admissions.json`, `db/private-admissions.json`) only if its categories are not in the database yet, so new datasets can be added to a live database without touching existing rows or preferences.

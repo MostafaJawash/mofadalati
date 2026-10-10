@@ -5,6 +5,11 @@ export const TRACK_LABEL: Record<Track, string> = {
   parallel: "موازي",
 };
 
+/** Private universities have a single admission track, stored as "general". */
+export function trackLabel(category: string, track: Track): string {
+  return category === "private" && track === "general" ? "خاص" : TRACK_LABEL[track];
+}
+
 export type Admission = {
   id: number;
   specialization: string;
@@ -47,4 +52,5 @@ export const CATEGORY_LABEL: Record<string, string> = {
   ministry: "الجامعات الحكومية",
   defense: "الجامعة الوطنية للعلوم الدفاعية",
   security: "الجامعة السورية للعلوم الأمنية",
+  private: "الجامعات الخاصة",
 };

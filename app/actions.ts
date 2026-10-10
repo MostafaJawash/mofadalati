@@ -6,7 +6,7 @@ import { checkPassword, createSession, destroySession, requireAdmin } from "@/li
 import { withTransaction } from "@/lib/db";
 import { isEligible } from "@/lib/eligibility";
 import { getAdmission, getSettings } from "@/lib/queries";
-import { TRACK_LABEL, type Track } from "@/lib/types";
+import { CATEGORY_LABEL, trackLabel, type Track } from "@/lib/types";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -61,8 +61,9 @@ async function rewritePositions(client: PoolClient, ids: number[]) {
   );
 }
 
-function describe(a: { specialization: string; city: string | null }, track: Track) {
-  return `${a.specialization}${a.city ? ` - ${a.city}` : ""} (${TRACK_LABEL[track]})`;
+function describe(a: { specialization: string; city: string | null; university?: string | null; category?: string }, track: Track) {
+  const where = [a.university, a.city].filter(Boolean).join(" - ");
+  return `${a.specialization}${where ? ` - ${where}` : ""} (${trackLabel(a.category ?? "", track)})`;
 }
 
 // ---------------------------------------------------------------- auth
@@ -116,7 +117,7 @@ export async function removePreference(preferenceId: number): Promise<ActionResu
     const { rows } = await client.query(
       `DELETE FROM preferences p USING admissions a
        WHERE p.id = $1 AND a.id = p.admission_id
-       RETURNING p.position, p.track, a.specialization, a.city`,
+       RETURNING p.position, p.track, a.specialization, a.city, a.university, a.category`,
       [Number(preferenceId)],
     );
     if (!rows[0]) throw new UserError("الرغبة غير موجودة (ربما حذفها مشرف آخر)");
@@ -192,7 +193,7 @@ function validateAdmission(input: AdmissionInput): AdmissionInput {
     specialization,
     university: text(input.university),
     city: text(input.city),
-    category: ["ministry", "defense", "security"].includes(input.category) ? input.category : "ministry",
+    category: input.category in CATEGORY_LABEL ? input.category : "ministry",
     general_available: Boolean(input.general_available),
     general_minimum: score(input.general_minimum, "الحد الأدنى للعام"),
     general_conditions: text(input.general_conditions),

@@ -160,7 +160,7 @@ function AdmissionRow({ admission: a, score, used, onEdit }: { admission: Admiss
         {a.specialization}
         {used && <span className="ms-2 rounded bg-primary-soft px-1.5 text-xs text-primary">في الرغبات</span>}
       </td>
-      <td className="px-3 py-2 text-muted">{a.city ?? a.university}</td>
+      <td className="px-3 py-2 text-muted">{[a.city, a.university].filter(Boolean).join(" · ")}</td>
       <td className="px-3 py-2">
         <TrackCell available={a.general_available} minimum={a.general_minimum} eligible={tracks.includes("general")} />
       </td>

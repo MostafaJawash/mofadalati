@@ -15,7 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useState, useTransition } from "react";
 import { clearPreferences, movePreference, removePreference, setPreferencesLocked, type ActionResult } from "@/app/actions";
 import { formatScore, isEligible, trackMinimum } from "@/lib/eligibility";
-import { TRACK_LABEL, type Preference } from "@/lib/types";
+import { trackLabel, type Preference } from "@/lib/types";
 import { toast } from "./Toaster";
 
 type Props = {
@@ -205,7 +205,7 @@ function PreferenceRow({
       <div className="min-w-0 flex-1">
         <p className="font-medium leading-snug">{p.admission.specialization}</p>
         <p className="text-xs text-muted">
-          {p.admission.city ?? p.admission.university}
+          {[p.admission.city, p.admission.university].filter(Boolean).join(" · ")}
           {!stillEligible && <span className="ms-2 font-semibold text-danger">· لم يعد متاحاً لمعدل {score}%</span>}
         </p>
       </div>
@@ -214,7 +214,7 @@ function PreferenceRow({
           p.track === "general" ? "bg-accent-soft text-accent" : "bg-parallel-soft text-parallel"
         }`}
       >
-        {TRACK_LABEL[p.track]}
+        {trackLabel(p.admission.category, p.track)}
       </span>
       <span className="w-12 shrink-0 text-center text-sm font-bold tabular">{min === null ? "—" : formatScore(min)}</span>
       {editable && (
